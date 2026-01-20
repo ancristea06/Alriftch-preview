@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visualizador de Cartas - Carga desde CSV</title>
+    <meta charset="UTF-8">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px; min-height: 100vh; }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            padding: 25px; 
+            background: rgba(0, 0, 0, 0.4); 
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        h1 { 
+            color: #ffd700; 
+            margin-bottom: 10px; 
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .subtitle { 
+            color: #aaa; 
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+        
+        .file-info {
+            background: rgba(0, 100, 200, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .controls { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+            flex-wrap: wrap; 
+            padding: 20px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 10px;
+        }
+        .filter-group { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            flex: 1;
+            min-width: 200px;
+        }
+        label { 
+            font-weight: bold; 
+            color: #4fc3f7; 
+            min-width: 80px;
+        }
+        select, input { 
+            padding: 10px 15px; 
+            border: 2px solid #3498db; 
+            border-radius: 8px; 
+            background: rgba(0,0,0,0.5); 
+            color: white; 
+            flex: 1;
+            transition: all 0.3s;
+        }
+        select:focus, input:focus { 
+            outline: none; 
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .stats { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+            flex-wrap: wrap; 
+        }
+        .stat-card { 
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(41, 128, 185, 0.3));
+            padding: 20px;
+            border-radius: 12px;
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255,215,0,0.3);
+        }
+        .stat-value { 
+            font-size: 2.2em; 
+            color: #ffd700; 
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .stat-label { 
+            color: #bbb; 
+            font-size: 0.95em;
+            margin-top: 5px;
+        }
+        
+        .cards-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 25px; 
+            margin-top: 20px; 
+        }
+        .card-item { 
+            background: linear-gradient(145deg, rgba(44, 62, 80, 0.9), rgba(52, 73, 94, 0.9));
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            border-left: 6px solid;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .card-item:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+        .card-item:hover { 
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+        .card-item.guerrero { border-color: #e74c3c; }
+        .card-item.tanque { border-color: #7f8c8d; }
+        .card-item.util { border-color: #2ecc71; }
+        
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: start; 
+            margin-bottom: 20px; 
+        }
+        .card-name { 
+            font-size: 1.5em; 
+            font-weight: bold; 
+            color: white;
+            text-shadow: 0 2px 3px rgba(0,0,0,0.3);
+        }
+        .card-cost { 
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #000; 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            font-size: 1.3em;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+        
+        .card-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .card-type { 
+            display: inline-block; 
+            padding: 6px 15px; 
+            border-radius: 20px; 
+            font-size: 0.85em; 
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Colores para tipos */
+        .type-fuego { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+        .type-electricidad { background: linear-gradient(135deg, #f1c40f, #f39c12); color: black; }
+        .type-hielo { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+        .type-naturaleza { background: linear-gradient(135deg, #27ae60, #229954); color: white; }
+        .type-tierra { background: linear-gradient(135deg, #d35400, #a35200); color: white; }
+        .type-acero { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+        .type-veneno { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+        .type-oscuridad { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; }
+        .type-luz { background: linear-gradient(135deg, #f1c40f, #f39c12); color: black; }
+        .type-energía { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+        .type-psíquico { background: linear-gradient(135deg, #e84393, #fd79a8); color: white; }
+        .type-sangre { background: linear-gradient(135deg, #c0392b, #e74c3c); color: white; }
+        
+        .card-stats { 
+            font-size: 2em; 
+            font-weight: bold; 
+            text-align: center; 
+            margin: 20px 0; 
+            padding: 15px; 
+            background: rgba(0,0,0,0.3); 
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .card-ability { 
+            font-size: 1em; 
+            line-height: 1.5; 
+            color: #ddd; 
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border-left: 3px solid #3498db;
+        }
+        .card-keywords { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            margin-top: 20px; 
+        }
+        .keyword { 
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(41, 128, 185, 0.3));
+            padding: 5px 12px; 
+            border-radius: 15px; 
+            font-size: 0.85em;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .card-id {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 0.75em;
+            color: rgba(255,255,255,0.4);
+            font-family: monospace;
+        }
+        
+        .loading { 
+            text-align: center; 
+            padding: 40px; 
+            font-size: 1.2em;
+            color: #4fc3f7;
+        }
+        
+        .error { 
+            background: rgba(231, 76, 60, 0.2); 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0;
+            border: 1px solid #e74c3c;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .footer { 
+            margin-top: 50px; 
+            text-align: center; 
+            color: #777; 
+            font-size: 0.9em; 
+            padding: 25px; 
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; }
+            .filter-group { min-width: 100%; }
+            .stat-card { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🃏 VISUALIZADOR DE CARTAS</h1>
+            <div class="subtitle">Carga datos desde <code>cartas_maestro.csv</code> en tiempo real</div>
+        </div>
+        
+        <div class="file-info">
+            <div>
+                <strong>Archivo CSV:</strong> <code id="csv-filename">cartas_maestro.csv</code>
+                <div id="file-status">🟡 Cargando datos...</div>
+            </div>
+            <div class="buttons">
+                <button class="btn-primary" onclick="loadCSVData()" title="Recargar datos del CSV">
+                    🔄 Recargar CSV
+                </button>
+                <button class="btn-secondary" onclick="exportToJSON()" title="Exportar a JSON">
+                    💾 Exportar JSON
+                </button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="filter-group">
+                <label>🔍 Buscar:</label>
+                <input type="text" id="search" placeholder="Nombre, habilidad, keyword...">
+            </div>
+            <div class="filter-group">
+                <label>🏷️ Clase:</label>
+                <select id="filter-class">
+                    <option value="">Todas las clases</option>
+                    <!-- Se llena dinámicamente -->
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>⚡ Tipo:</label>
+                <select id="filter-type">
+                    <option value="">Todos los tipos</option>
+                    <!-- Se llena dinámicamente -->
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>⭐ Rareza:</label>
+                <select id="filter-rarity">
+                    <option value="">Todas las rarezas</option>
+                    <!-- Se llena dinámicamente -->
+                </select>
+            </div>
+        </div>
+        
+        <div class="buttons" style="margin-bottom: 20px;">
+            <button class="btn-secondary" onclick="filterCards()">
+                ✅ Aplicar filtros
+            </button>
+            <button class="btn-danger" onclick="resetFilters()">
+                🗑️ Limpiar filtros
+            </button>
+            <button class="btn-primary" onclick="toggleViewMode()" id="view-toggle">
+                📋 Vista tabla
+            </button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-cartas">0</div>
+                <div class="stat-label">Total de cartas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="count-guerrero">0</div>
+                <div class="stat-label">Guerreros</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="count-tanque">0</div>
+                <div class="stat-label">Tanques</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="count-util">0</div>
+                <div class="stat-label">Útiles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-coste">0.0</div>
+                <div class="stat-label">Coste promedio</div>
+            </div>
+        </div>
+        
+        <!-- Vista de cartas (default) -->
+        <div id="cards-view">
+            <div class="cards-grid" id="cards-container">
+                <!-- Las cartas se cargan aquí dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Vista de tabla (oculta inicialmente) -->
+        <div id="table-view" style="display: none; margin-top: 30px;">
+            <div style="overflow-x: auto; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 20px;">
+                <table id="cards-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: rgba(52, 152, 219, 0.3);">
+                            <th style="padding: 12px; text-align: left;">ID</th>
+                            <th style="padding: 12px; text-align: left;">Nombre</th>
+                            <th style="padding: 12px; text-align: left;">Clase</th>
+                            <th style="padding: 12px; text-align: left;">Tipo</th>
+                            <th style="padding: 12px; text-align: left;">Coste</th>
+                            <th style="padding: 12px; text-align: left;">Estadísticas</th>
+                            <th style="padding: 12px; text-align: left;">Habilidad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Datos de tabla se cargan aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div>Cargando cartas desde CSV...</div>
+            <div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
+                Asegúrate de que <code>cartas_maestro.csv</code> esté en la misma carpeta
+            </div>
+        </div>
+        
+        <div id="error-container" style="display: none;" class="error">
+            <!-- Mensajes de error aparecen aquí -->
+        </div>
+        
+        <div class="footer">
+            <p>Visualizador dinámico para juego de cartas estratégico | 
+            Mostrando <span id="cartas-mostradas">0</span> de <span id="cartas-totales">0</span> cartas | 
+            Última actualización: <span id="fecha-actual">--</span></p>
+            <p style="margin-top: 10px; font-size: 0.8em; color: #555;">
+                💡 Tip: Usa un servidor local (Live Server en VS Code) para evitar problemas de CORS
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let allCartas = [];
+        let isTableView = false;
+        let csvFileName = 'cartas_maestro.csv';
+
+        // Función para cargar CSV
+        async function loadCSVData() {
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error-container');
+            const fileStatus = document.getElementById('file-status');
+            
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            fileStatus.innerHTML = '🟡 Cargando datos...';
+            
+            try {
+                // Intenta cargar el CSV
+                const response = await fetch(csvFileName);
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                
+                if (!csvText || csvText.trim().length === 0) {
+                    throw new Error('El archivo CSV está vacío');
+                }
+                
+                // Parsear CSV
+                allCartas = parseCSV(csvText);
+                
+                if (allCartas.length === 0) {
+                    throw new Error('No se encontraron cartas en el CSV');
+                }
+                
+                // Actualizar UI
+                updateFileStatus(true, allCartas.length);
+                populateFilters(allCartas);
+                if (isTableView) {
+                    renderTableView();
+                } else {
+                    renderCardView();
+                }
+                
+                console.log(`✅ CSV cargado: ${allCartas.length} cartas`);
+                
+            } catch (error) {
+                console.error('Error cargando CSV:', error);
+                showError(`No se pudo cargar el CSV: ${error.message}`);
+                updateFileStatus(false, 0);
+                
+                // Mostrar datos de ejemplo para pruebas
+                allCartas = getSampleData();
+                if (isTableView) {
+                    renderTableView();
+                } else {
+                    renderCardView();
+                }
+            } finally {
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        // Parsear CSV
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            // Detectar delimitador (coma o punto y coma)
+            const firstLine = lines[0];
+            const delimiter = firstLine.includes(';') ? ';' : ',';
+            
+            // Obtener cabeceras
+            const headers = firstLine.split(delimiter).map(h => h.trim());
+            
+            const cartas = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // Manejar campos entre comillas
+                const values = [];
+                let inQuotes = false;
+                let currentValue = '';
+                
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === delimiter && !inQuotes) {
+                        values.push(currentValue.trim());
+                        currentValue = '';
+                    } else {
+                        currentValue += char;
+                    }
+                }
+                values.push(currentValue.trim());
+                
+                // Crear objeto carta
+                const carta = {};
+                headers.forEach((header, index) => {
+                    if (index < values.length) {
+                        carta[header] = values[index];
+                    } else {
+                        carta[header] = '';
+                    }
+                });
+                
+                // Validar campos mínimos
+                if (carta.Nombre && carta.Clase) {
+                    // Normalizar valores
+                    carta.CosteMana = parseInt(carta.CosteMana) || 0;
+                    carta.Ataque = parseInt(carta.Ataque) || 0;
+                    carta.Salud = parseInt(carta.Salud) || 0;
+                    
+                    cartas.push(carta);
+                }
+            }
+            
+            return cartas;
+        }
+
+        // Datos de ejemplo si falla la carga
+        function getSampleData() {
+            return [
+                {
+                    ID: "G001",
+                    Nombre: "Aprendiz de Espada",
+                    Clase: "Guerrero",
+                    Tipo: "Fuego",
+                    Rareza: "Común",
+                    CosteMana: "1",
+                    Ataque: "1",
+                    Salud: "2",
+                    Habilidad: "Iniciación: Al atacar por primera vez, gana +1/+1",
+                    Keywords: "Iniciación",
+                    FlavorText: "Joven guerrero en entrenamiento",
+                    Estado: "Finalizado"
+                },
+                {
+                    ID: "T001",
+                    Nombre: "Muro de Hielo",
+                    Clase: "Tanque",
+                    Tipo: "Hielo",
+                    Rareza: "Poco Común",
+                    CosteMana: "3",
+                    Ataque: "0",
+                    Salud: "7",
+                    Habilidad: "Defensor, 30% chance de congelar al atacante",
+                    Keywords: "Defensor",
+                    FlavorText: "Barrera glacial",
+                    Estado: "Finalizado"
+                },
+                {
+                    ID: "U001",
+                    Nombre: "Poción de Vida",
+                    Clase: "Útil",
+                    Tipo: "Luz",
+                    Rareza: "Común",
+                    CosteMana: "1",
+                    Ataque: "0",
+                    Salud: "0",
+                    Habilidad: "Cura 3 puntos de vida a una criatura o jugador",
+                    Keywords: "Curación",
+                    FlavorText: "Brebaje de sanación básico",
+                    Estado: "Finalizado"
+                }
+            ];
+        }
+
+        // Actualizar estado del archivo
+        function updateFileStatus(success, count) {
+            const fileStatus = document.getElementById('file-status');
+            const filenameEl = document.getElementById('csv-filename');
+            
+            filenameEl.textContent = csvFileName;
+            
+            if (success) {
+                fileStatus.innerHTML = `✅ CSV cargado: ${count} cartas`;
+                fileStatus.style.color = '#2ecc71';
+            } else {
+                fileStatus.innerHTML = '❌ Error cargando CSV - Mostrando datos de ejemplo';
+                fileStatus.style.color = '#e74c3c';
+            }
+        }
+
+        // Mostrar error
+        function showError(message) {
+            const errorEl = document.getElementById('error-container');
+            errorEl.innerHTML = `
+                <strong>⚠️ Error:</strong> ${message}
+                <div style="margin-top: 10px; font-size: 0.9em;">
+                    <p>Asegúrate de:</p>
+                    <ol>
+                        <li>El archivo <code>${csvFileName}</code> existe en la misma carpeta</li>
+                        <li>El CSV tiene formato correcto (ID,Nombre,Clase...)</li>
+                        <li>Estás usando un servidor local (Live Server en VS Code)</li>
+                    </ol>
+                    <p style="margin-top: 10px;">
+                        <button onclick="loadCSVData()" style="padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Reintentar
+                        </button>
+                    </p>
+                </div>
+            `;
+            errorEl.style.display = 'block';
+        }
+
+        // Poblar filtros dinámicamente
+        function populateFilters(cartas) {
+            // Clases únicas
+            const clases = [...new Set(cartas.map(c => c.Clase))].filter(c => c);
+            const classSelect = document.getElementById('filter-class');
+            classSelect.innerHTML = '<option value="">Todas las clases</option>';
+            clases.forEach(clase => {
+                const option = document.createElement('option');
+                option.value = clase;
+                option.textContent = clase;
+                classSelect.appendChild(option);
+            });
+            
+            // Tipos únicos
+            const tipos = [...new Set(cartas.map(c => c.Tipo))].filter(t => t);
+            const tipoSelect = document.getElementById('filter-type');
+            tipoSelect.innerHTML = '<option value="">Todos los tipos</option>';
+            tipos.forEach(tipo => {
+                const option = document.createElement('option');
+                option.value = tipo;
+                option.textContent = tipo;
+                tipoSelect.appendChild(option);
+            });
+            
+            // Rarezas únicas
+            const rarezas = [...new Set(cartas.map(c => c.Rareza))].filter(r => r);
+            const raritySelect = document.getElementById('filter-rarity');
+            raritySelect.innerHTML = '<option value="">Todas las rarezas</option>';
+            rarezas.forEach(rareza => {
+                const option = document.createElement('option');
+                option.value = rareza;
+                option.textContent = rareza;
+                raritySelect.appendChild(option);
+            });
+        }
+
+        // Filtrar cartas
+        function filterCards() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const selectedClass = document.getElementById('filter-class').value;
+            const selectedType = document.getElementById('filter-type').value;
+            const selectedRarity = document.getElementById('filter-rarity').value;
+            
+            const filtered = allCartas.filter(carta => {
+                // Búsqueda en múltiples campos
+                const matchesSearch = !searchTerm || 
+                    carta.Nombre.toLowerCase().includes(searchTerm) ||
+                    (carta.Habilidad && carta.Habilidad.toLowerCase().includes(searchTerm)) ||
+                    (carta.Keywords && carta.Keywords.toLowerCase().includes(searchTerm)) ||
+                    (carta.FlavorText && carta.FlavorText.toLowerCase().includes(searchTerm));
+                
+                const matchesClass = !selectedClass || carta.Clase === selectedClass;
+                const matchesType = !selectedType || carta.Tipo === selectedType;
+                const matchesRarity = !selectedRarity || carta.Rareza === selectedRarity;
+                
+                return matchesSearch && matchesClass && matchesType && matchesRarity;
+            });
+            
+            if (isTableView) {
+                renderTableView(filtered);
+            } else {
+                renderCardView(filtered);
+            }
+        }
+
+        // Renderizar vista de cartas
+        function renderCardView(cartas = allCartas) {
+            const container = document.getElementById('cards-container');
+            
+            if (cartas.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #aaa;">
+                        <div style="font-size: 1.5em; margin-bottom: 10px;">🎴</div>
+                        <div>No se encontraron cartas con los filtros actuales</div>
+                        <button onclick="resetFilters()" style="margin-top: 20px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Mostrar todas las cartas
+                        </button>
+                    </div>
+                `;
+                updateStats(cartas);
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            cartas.forEach(carta => {
+                const cardElement = document.createElement('div');
+                cardElement.className = `card-item ${carta.Clase.toLowerCase()}`;
+                
+                // Clase CSS para el tipo (con tilde normalizada)
+                const tipoNormalizado = carta.Tipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const typeClass = `type-${tipoNormalizado}`;
+                
+                // Formatear estadísticas
+                let statsHTML = '';
+                if (carta.Clase !== 'Útil') {
+                    statsHTML = `<div class="card-stats">${carta.Ataque}/${carta.Salud}</div>`;
+                } else {
+                    statsHTML = '<div class="card-stats">-</div>';
+                }
+                
+                // Formatear keywords
+                let keywordsHTML = '';
+                if (carta.Keywords) {
+                    const keywords = carta.Keywords.split(',').map(k => k.trim()).filter(k => k);
+                    keywordsHTML = `
+                        <div class="card-keywords">
+                            ${keywords.map(k => `<span class="keyword">${k}</span>`).join('')}
+                        </div>
+                    `;
+                }
+                
+                cardElement.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-name">${carta.Nombre}</div>
+                        <div class="card-cost">${carta.CosteMana}</div>
+                    </div>
+                    
+                    <div class="card-meta">
+                        <div class="card-type ${typeClass}">${carta.Tipo}</div>
+                        <div class="card-type" style="background:linear-gradient(135deg, #9b59b6, #8e44ad);">${carta.Rareza}</div>
+                    </div>
+                    
+                    ${statsHTML}
+                    
+                    <div class="card-ability">
+                        <strong>💫 Habilidad:</strong><br>
+                        ${carta.Habilidad || 'Sin habilidad especial'}
+                    </div>
+                    
+                    ${keywordsHTML}
+                    
+                    ${carta.FlavorText ? 
+                        `<div style="margin-top: 15px; font-size: 0.9em; color: #aaa; font-style: italic; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            "${carta.FlavorText}"
+                        </div>` : ''
+                    }
+                    
+                    <div class="card-id">${carta.ID}</div>
+                `;
+                
+                container.appendChild(cardElement);
+            });
+            
+            updateStats(cartas);
+        }
+
+        // Renderizar vista de tabla
+        function renderTableView(cartas = allCartas) {
+            const tableBody = document.getElementById('table-body');
+            
+            if (cartas.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px; color: #aaa;">
+                            No se encontraron cartas con los filtros actuales
+                        </td>
+                    </tr>
+                `;
+                updateStats(cartas);
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            cartas.forEach(carta => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+                row.innerHTML = `
+                    <td style="padding: 12px; font-family: monospace; color: #aaa;">${carta.ID}</td>
+                    <td style="padding: 12px; font-weight: bold;">${carta.Nombre}</td>
+                    <td style="padding: 12px;">
+                        <span class="card-type ${carta.Clase.toLowerCase() === 'guerrero' ? 'type-fuego' : carta.Clase.toLowerCase() === 'tanque' ? 'type-acero' : 'type-naturaleza'}" style="padding: 4px 8px; font-size: 0.8em;">
+                            ${carta.Clase}
+                        </span>
+                    </td>
+                    <td style="padding: 12px;">${carta.Tipo}</td>
+                    <td style="padding: 12px; text-align: center; font-weight: bold;">${carta.CosteMana}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        ${carta.Clase !== 'Útil' ? `${carta.Ataque}/${carta.Salud}` : '-'}
+                    </td>
+                    <td style="padding: 12px; font-size: 0.9em; max-width: 300px;">${carta.Habilidad || ''}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            updateStats(cartas);
+        }
+
+        // Actualizar estadísticas
+        function updateStats(cartas) {
+            document.getElementById('total-cartas').textContent = cartas.length;
+            document.getElementById('cartas-mostradas').textContent = cartas.length;
+            document.getElementById('cartas-totales').textContent = allCartas.length;
+            
+            // Contar por clase
+            const guerreros = cartas.filter(c => c.Clase === 'Guerrero').length;
+            const tanques = cartas.filter(c => c.Clase === 'Tanque').length;
+            const utiles = cartas.filter(c => c.Clase === 'Útil').length;
+            
+            document.getElementById('count-guerrero').textContent = guerreros;
+            document.getElementById('count-tanque').textContent = tanques;
+            document.getElementById('count-util').textContent = utiles;
+            
+            // Coste promedio
+            const costes = cartas.map(c => parseInt(c.CosteMana) || 0);
+            const avg = costes.length > 0 ? 
+                (costes.reduce((a, b) => a + b, 0) / costes.length).toFixed(1) : 0;
+            document.getElementById('avg-coste').textContent = avg;
+            
+            // Actualizar fecha
+            document.getElementById('fecha-actual').textContent = new Date().toLocaleString();
+        }
+
+        // Resetear filtros
+        function resetFilters() {
+            document.getElementById('search').value = '';
+            document.getElementById('filter-class').value = '';
+            document.getElementById('filter-type').value = '';
+            document.getElementById('filter-rarity').value = '';
+            
+            if (isTableView) {
+                renderTableView();
+            } else {
+                renderCardView();
+            }
+        }
+
+        // Alternar vista
+        function toggleViewMode() {
+            isTableView = !isTableView;
+            const cardsView = document.getElementById('cards-view');
+            const tableView = document.getElementById('table-view');
+            const toggleBtn = document.getElementById('view-toggle');
+            
+            if (isTableView) {
+                cardsView.style.display = 'none';
+                tableView.style.display = 'block';
+                toggleBtn.innerHTML = '🃏 Vista cartas';
+                renderTableView();
+            } else {
+                cardsView.style.display = 'block';
+                tableView.style.display = 'none';
+                toggleBtn.innerHTML = '📋 Vista tabla';
+                renderCardView();
+            }
+        }
+
+        // Exportar a JSON
+        function exportToJSON() {
+            const dataStr = JSON.stringify(allCartas, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'cartas_export.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            // Notificación
+            alert(`✅ Exportadas ${allCartas.length} cartas a JSON`);
+        }
+
+        // Event listeners para filtros en tiempo real
+        function setupEventListeners() {
+            document.getElementById('search').addEventListener('input', filterCards);
+            document.getElementById('filter-class').addEventListener('change', filterCards);
+            document.getElementById('filter-type').addEventListener('change', filterCards);
+            document.getElementById('filter-rarity').addEventListener('change', filterCards);
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            loadCSVData();
+        });
+    </script>
+</body>
+</html>

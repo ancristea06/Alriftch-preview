@@ -1,0 +1,18 @@
+{
+  "id": "CLASE###",
+  "nombre": "Nombre de la Carta",
+  "clase": "Guerrero/Tanque/Útil",
+  "tipo": "Elemento",
+  "rareza": "Común/Poco Común/Rara/Épica/Legendaria",
+  "costeMana": 0,
+  "ataque": 0,
+  "salud": 0,
+  "habilidad": "Descripción de la habilidad",
+  "keywords": ["Keyword1", "Keyword2"],
+  "flavorText": "Texto descriptivo",
+  "estado": "Borrador/Testing/Finalizado",
+  "notas": "Notas de diseño o balance",
+  "version": "1.0",
+  "fechaCreacion": "2024-01-01",
+  "ultimaModificacion": "2024-01-01"
+}
