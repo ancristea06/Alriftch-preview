@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Visualizador de Cartas - Carga desde CSV</title>
+    <title>Visualizador de Cartas - Nuevo Sistema</title>
     <meta charset="UTF-8">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
@@ -112,14 +112,14 @@
         
         .cards-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
             gap: 25px; 
             margin-top: 20px; 
         }
         .card-item { 
             background: linear-gradient(145deg, rgba(44, 62, 80, 0.9), rgba(52, 73, 94, 0.9));
             border-radius: 15px;
-            padding: 25px;
+            padding: 20px;
             transition: all 0.3s ease;
             border-left: 6px solid;
             position: relative;
@@ -148,10 +148,10 @@
             display: flex; 
             justify-content: space-between; 
             align-items: start; 
-            margin-bottom: 20px; 
+            margin-bottom: 15px; 
         }
         .card-name { 
-            font-size: 1.5em; 
+            font-size: 1.4em; 
             font-weight: bold; 
             color: white;
             text-shadow: 0 2px 3px rgba(0,0,0,0.3);
@@ -159,14 +159,14 @@
         .card-cost { 
             background: linear-gradient(135deg, #f1c40f, #f39c12);
             color: #000; 
-            width: 45px; 
-            height: 45px; 
+            width: 40px; 
+            height: 40px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             font-weight: bold; 
-            font-size: 1.3em;
+            font-size: 1.2em;
             box-shadow: 0 3px 6px rgba(0,0,0,0.3);
         }
         
@@ -179,11 +179,10 @@
         
         .card-type { 
             display: inline-block; 
-            padding: 6px 15px; 
+            padding: 5px 12px; 
             border-radius: 20px; 
-            font-size: 0.85em; 
+            font-size: 0.8em; 
             font-weight: bold;
-            text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
@@ -191,48 +190,80 @@
         .type-fuego { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
         .type-electricidad { background: linear-gradient(135deg, #f1c40f, #f39c12); color: black; }
         .type-hielo { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
-        .type-naturaleza { background: linear-gradient(135deg, #27ae60, #229954); color: white; }
         .type-tierra { background: linear-gradient(135deg, #d35400, #a35200); color: white; }
         .type-acero { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
         .type-veneno { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
-        .type-oscuridad { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; }
-        .type-luz { background: linear-gradient(135deg, #f1c40f, #f39c12); color: black; }
         .type-energía { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
-        .type-psíquico { background: linear-gradient(135deg, #e84393, #fd79a8); color: white; }
-        .type-sangre { background: linear-gradient(135deg, #c0392b, #e74c3c); color: white; }
         
-        .card-stats { 
-            font-size: 2em; 
-            font-weight: bold; 
-            text-align: center; 
-            margin: 20px 0; 
-            padding: 15px; 
-            background: rgba(0,0,0,0.3); 
+        .card-stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
-            border: 2px solid rgba(255,255,255,0.1);
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-value-large {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffd700;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
+        
+        .stat-label-small {
+            font-size: 0.85em;
+            color: #bbb;
+            margin-top: 5px;
+        }
+        
+        .rango-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .rango-cuerpo {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .rango-distancia {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
         .card-ability { 
-            font-size: 1em; 
-            line-height: 1.5; 
+            font-size: 0.95em; 
+            line-height: 1.4; 
             color: #ddd; 
-            margin-bottom: 15px;
+            margin: 15px 0;
             padding: 15px;
             background: rgba(255,255,255,0.05);
             border-radius: 8px;
             border-left: 3px solid #3498db;
         }
+        
         .card-keywords { 
             display: flex; 
             flex-wrap: wrap; 
-            gap: 10px; 
-            margin-top: 20px; 
+            gap: 8px; 
+            margin-top: 15px; 
         }
         .keyword { 
             background: linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(41, 128, 185, 0.3));
-            padding: 5px 12px; 
+            padding: 4px 10px; 
             border-radius: 15px; 
-            font-size: 0.85em;
+            font-size: 0.8em;
             border: 1px solid rgba(255,255,255,0.1);
         }
         
@@ -312,19 +343,20 @@
             .controls { flex-direction: column; }
             .filter-group { min-width: 100%; }
             .stat-card { min-width: 100%; }
+            .card-stats-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🃏 VISUALIZADOR DE CARTAS</h1>
-            <div class="subtitle">Carga datos desde <code>cartas_maestro.csv</code> en tiempo real</div>
+            <h1>🃏 VISUALIZADOR DE CARTAS - NUEVO SISTEMA</h1>
+            <div class="subtitle">Carga datos desde <code>cartas_nuevo_sistema.csv</code> en tiempo real</div>
         </div>
         
         <div class="file-info">
             <div>
-                <strong>Archivo CSV:</strong> <code id="csv-filename">cartas_maestro.csv</code>
+                <strong>Archivo CSV:</strong> <code id="csv-filename">cartas_nuevo_sistema.csv</code>
                 <div id="file-status">🟡 Cargando datos...</div>
             </div>
             <div class="buttons">
@@ -333,6 +365,9 @@
                 </button>
                 <button class="btn-secondary" onclick="exportToJSON()" title="Exportar a JSON">
                     💾 Exportar JSON
+                </button>
+                <button class="btn-primary" onclick="toggleViewMode()" id="view-toggle">
+                    📋 Vista tabla
                 </button>
             </div>
         </div>
@@ -357,10 +392,12 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label>⭐ Rareza:</label>
-                <select id="filter-rarity">
-                    <option value="">Todas las rarezas</option>
-                    <!-- Se llena dinámicamente -->
+                <label>🎯 Rango:</label>
+                <select id="filter-range">
+                    <option value="">Todos los rangos</option>
+                    <option value="Cuerpo">Cuerpo a cuerpo</option>
+                    <option value="Distancia">Distancia</option>
+                    <option value="-">Hechizo</option>
                 </select>
             </div>
         </div>
@@ -371,9 +408,6 @@
             </button>
             <button class="btn-danger" onclick="resetFilters()">
                 🗑️ Limpiar filtros
-            </button>
-            <button class="btn-primary" onclick="toggleViewMode()" id="view-toggle">
-                📋 Vista tabla
             </button>
         </div>
         
@@ -396,7 +430,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="avg-coste">0.0</div>
-                <div class="stat-label">Coste promedio</div>
+                <div class="stat-label">Coste habilidad promedio</div>
             </div>
         </div>
         
@@ -417,8 +451,10 @@
                             <th style="padding: 12px; text-align: left;">Nombre</th>
                             <th style="padding: 12px; text-align: left;">Clase</th>
                             <th style="padding: 12px; text-align: left;">Tipo</th>
-                            <th style="padding: 12px; text-align: left;">Coste</th>
-                            <th style="padding: 12px; text-align: left;">Estadísticas</th>
+                            <th style="padding: 12px; text-align: left;">Rango</th>
+                            <th style="padding: 12px; text-align: left;">Coste H.</th>
+                            <th style="padding: 12px; text-align: left;">Ataque/Salud</th>
+                            <th style="padding: 12px; text-align: left;">Alcance</th>
                             <th style="padding: 12px; text-align: left;">Habilidad</th>
                         </tr>
                     </thead>
@@ -432,7 +468,7 @@
         <div id="loading" class="loading">
             <div>Cargando cartas desde CSV...</div>
             <div style="margin-top: 10px; font-size: 0.9em; color: #aaa;">
-                Asegúrate de que <code>cartas_maestro.csv</code> esté en la misma carpeta
+                Asegúrate de que <code>cartas_nuevo_sistema.csv</code> esté en la misma carpeta
             </div>
         </div>
         
@@ -441,7 +477,7 @@
         </div>
         
         <div class="footer">
-            <p>Visualizador dinámico para juego de cartas estratégico | 
+            <p>Visualizador para juego de cartas estratégico (Nuevo Sistema) | 
             Mostrando <span id="cartas-mostradas">0</span> de <span id="cartas-totales">0</span> cartas | 
             Última actualización: <span id="fecha-actual">--</span></p>
             <p style="margin-top: 10px; font-size: 0.8em; color: #555;">
@@ -454,7 +490,7 @@
         // Variables globales
         let allCartas = [];
         let isTableView = false;
-        let csvFileName = 'cartas_maestro.csv';
+        let csvFileName = 'cartas_nuevo_sistema.csv';
 
         // Función para cargar CSV
         async function loadCSVData() {
@@ -564,10 +600,11 @@
                 
                 // Validar campos mínimos
                 if (carta.Nombre && carta.Clase) {
-                    // Normalizar valores
-                    carta.CosteMana = parseInt(carta.CosteMana) || 0;
+                    // Normalizar valores numéricos
+                    carta.CosteHabilidad = parseInt(carta.CosteHabilidad) || 0;
                     carta.Ataque = parseInt(carta.Ataque) || 0;
                     carta.Salud = parseInt(carta.Salud) || 0;
+                    carta.Alcance = parseInt(carta.Alcance) || 0;
                     
                     cartas.push(carta);
                 }
@@ -581,45 +618,45 @@
             return [
                 {
                     ID: "G001",
-                    Nombre: "Aprendiz de Espada",
+                    Nombre: "Lancero",
                     Clase: "Guerrero",
                     Tipo: "Fuego",
-                    Rareza: "Común",
-                    CosteMana: "1",
-                    Ataque: "1",
-                    Salud: "2",
-                    Habilidad: "Iniciación: Al atacar por primera vez, gana +1/+1",
-                    Keywords: "Iniciación",
-                    FlavorText: "Joven guerrero en entrenamiento",
-                    Estado: "Finalizado"
+                    Rango: "Cuerpo",
+                    CosteHabilidad: "0",
+                    Ataque: "2",
+                    Salud: "4",
+                    Alcance: "1",
+                    Habilidad: "-",
+                    Keywords: "-",
+                    Rareza: "Común"
                 },
                 {
-                    ID: "T001",
-                    Nombre: "Muro de Hielo",
-                    Clase: "Tanque",
-                    Tipo: "Hielo",
-                    Rareza: "Poco Común",
-                    CosteMana: "3",
-                    Ataque: "0",
-                    Salud: "7",
-                    Habilidad: "Defensor, 30% chance de congelar al atacante",
-                    Keywords: "Defensor",
-                    FlavorText: "Barrera glacial",
-                    Estado: "Finalizado"
+                    ID: "G002",
+                    Nombre: "Arquero",
+                    Clase: "Guerrero",
+                    Tipo: "Electricidad",
+                    Rango: "Distancia",
+                    CosteHabilidad: "1",
+                    Ataque: "3",
+                    Salud: "2",
+                    Alcance: "3",
+                    Habilidad: "-",
+                    Keywords: "-",
+                    Rareza: "Común"
                 },
                 {
                     ID: "U001",
-                    Nombre: "Poción de Vida",
+                    Nombre: "Poción de Maná",
                     Clase: "Útil",
-                    Tipo: "Luz",
-                    Rareza: "Común",
-                    CosteMana: "1",
+                    Tipo: "Energía",
+                    Rango: "-",
+                    CosteHabilidad: "1",
                     Ataque: "0",
                     Salud: "0",
-                    Habilidad: "Cura 3 puntos de vida a una criatura o jugador",
-                    Keywords: "Curación",
-                    FlavorText: "Brebaje de sanación básico",
-                    Estado: "Finalizado"
+                    Alcance: "-",
+                    Habilidad: "+2 maná este turno",
+                    Keywords: "Maná",
+                    Rareza: "Común"
                 }
             ];
         }
@@ -649,7 +686,7 @@
                     <p>Asegúrate de:</p>
                     <ol>
                         <li>El archivo <code>${csvFileName}</code> existe en la misma carpeta</li>
-                        <li>El CSV tiene formato correcto (ID,Nombre,Clase...)</li>
+                        <li>El CSV tiene formato correcto (ID,Nombre,Clase,Rango...)</li>
                         <li>Estás usando un servidor local (Live Server en VS Code)</li>
                     </ol>
                     <p style="margin-top: 10px;">
@@ -686,16 +723,7 @@
                 tipoSelect.appendChild(option);
             });
             
-            // Rarezas únicas
-            const rarezas = [...new Set(cartas.map(c => c.Rareza))].filter(r => r);
-            const raritySelect = document.getElementById('filter-rarity');
-            raritySelect.innerHTML = '<option value="">Todas las rarezas</option>';
-            rarezas.forEach(rareza => {
-                const option = document.createElement('option');
-                option.value = rareza;
-                option.textContent = rareza;
-                raritySelect.appendChild(option);
-            });
+            // Rango único (ya predefinido)
         }
 
         // Filtrar cartas
@@ -703,21 +731,20 @@
             const searchTerm = document.getElementById('search').value.toLowerCase();
             const selectedClass = document.getElementById('filter-class').value;
             const selectedType = document.getElementById('filter-type').value;
-            const selectedRarity = document.getElementById('filter-rarity').value;
+            const selectedRange = document.getElementById('filter-range').value;
             
             const filtered = allCartas.filter(carta => {
                 // Búsqueda en múltiples campos
                 const matchesSearch = !searchTerm || 
                     carta.Nombre.toLowerCase().includes(searchTerm) ||
                     (carta.Habilidad && carta.Habilidad.toLowerCase().includes(searchTerm)) ||
-                    (carta.Keywords && carta.Keywords.toLowerCase().includes(searchTerm)) ||
-                    (carta.FlavorText && carta.FlavorText.toLowerCase().includes(searchTerm));
+                    (carta.Keywords && carta.Keywords.toLowerCase().includes(searchTerm));
                 
                 const matchesClass = !selectedClass || carta.Clase === selectedClass;
                 const matchesType = !selectedType || carta.Tipo === selectedType;
-                const matchesRarity = !selectedRarity || carta.Rareza === selectedRarity;
+                const matchesRange = !selectedRange || carta.Rango === selectedRange;
                 
-                return matchesSearch && matchesClass && matchesType && matchesRarity;
+                return matchesSearch && matchesClass && matchesType && matchesRange;
             });
             
             if (isTableView) {
@@ -751,21 +778,50 @@
                 const cardElement = document.createElement('div');
                 cardElement.className = `card-item ${carta.Clase.toLowerCase()}`;
                 
-                // Clase CSS para el tipo (con tilde normalizada)
+                // Clase CSS para el tipo
                 const tipoNormalizado = carta.Tipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const typeClass = `type-${tipoNormalizado}`;
                 
-                // Formatear estadísticas
+                // Determinar clase CSS para rango
+                let rangoClass = '';
+                let rangoIcon = '';
+                if (carta.Rango === 'Cuerpo') {
+                    rangoClass = 'rango-cuerpo';
+                    rangoIcon = '⚔️';
+                } else if (carta.Rango === 'Distancia') {
+                    rangoClass = 'rango-distancia';
+                    rangoIcon = '🏹';
+                }
+                
+                // HTML para estadísticas según tipo de carta
                 let statsHTML = '';
                 if (carta.Clase !== 'Útil') {
-                    statsHTML = `<div class="card-stats">${carta.Ataque}/${carta.Salud}</div>`;
+                    statsHTML = `
+                        <div class="card-stats-container">
+                            <div class="stat-box">
+                                <div class="stat-value-large">${carta.Ataque}</div>
+                                <div class="stat-label-small">Ataque</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value-large">${carta.Salud}</div>
+                                <div class="stat-label-small">Salud</div>
+                            </div>
+                        </div>
+                    `;
                 } else {
-                    statsHTML = '<div class="card-stats">-</div>';
+                    statsHTML = `
+                        <div class="card-stats-container">
+                            <div class="stat-box" style="grid-column: 1 / -1;">
+                                <div class="stat-value-large">Hechizo</div>
+                                <div class="stat-label-small">Efecto instantáneo</div>
+                            </div>
+                        </div>
+                    `;
                 }
                 
                 // Formatear keywords
                 let keywordsHTML = '';
-                if (carta.Keywords) {
+                if (carta.Keywords && carta.Keywords !== '-') {
                     const keywords = carta.Keywords.split(',').map(k => k.trim()).filter(k => k);
                     keywordsHTML = `
                         <div class="card-keywords">
@@ -777,28 +833,35 @@
                 cardElement.innerHTML = `
                     <div class="card-header">
                         <div class="card-name">${carta.Nombre}</div>
-                        <div class="card-cost">${carta.CosteMana}</div>
+                        ${carta.CosteHabilidad > 0 ? 
+                            `<div class="card-cost" title="Coste de habilidad">${carta.CosteHabilidad}</div>` : 
+                            '<div class="card-cost" style="background:#7f8c8d;" title="Sin coste de habilidad">0</div>'
+                        }
                     </div>
                     
                     <div class="card-meta">
                         <div class="card-type ${typeClass}">${carta.Tipo}</div>
-                        <div class="card-type" style="background:linear-gradient(135deg, #9b59b6, #8e44ad);">${carta.Rareza}</div>
+                        ${carta.Rango && carta.Rango !== '-' ? 
+                            `<span class="rango-badge ${rangoClass}">${rangoIcon} ${carta.Rango}</span>` : 
+                            ''
+                        }
+                        ${carta.Alcance && carta.Alcance > 0 ? 
+                            `<span class="rango-badge" style="background:#3498db;">🎯 Alcance: ${carta.Alcance}</span>` : 
+                            ''
+                        }
                     </div>
                     
                     ${statsHTML}
                     
-                    <div class="card-ability">
-                        <strong>💫 Habilidad:</strong><br>
-                        ${carta.Habilidad || 'Sin habilidad especial'}
-                    </div>
+                    ${carta.Habilidad && carta.Habilidad !== '-' ? 
+                        `<div class="card-ability">
+                            <strong>💫 Habilidad:</strong><br>
+                            ${carta.Habilidad}
+                        </div>` : 
+                        ''
+                    }
                     
                     ${keywordsHTML}
-                    
-                    ${carta.FlavorText ? 
-                        `<div style="margin-top: 15px; font-size: 0.9em; color: #aaa; font-style: italic; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                            "${carta.FlavorText}"
-                        </div>` : ''
-                    }
                     
                     <div class="card-id">${carta.ID}</div>
                 `;
@@ -816,7 +879,7 @@
             if (cartas.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 30px; color: #aaa;">
+                        <td colspan="9" style="text-align: center; padding: 30px; color: #aaa;">
                             No se encontraron cartas con los filtros actuales
                         </td>
                     </tr>
@@ -830,20 +893,33 @@
             cartas.forEach(carta => {
                 const row = document.createElement('tr');
                 row.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+                
+                // Determinar color de clase
+                let classColor = '';
+                if (carta.Clase === 'Guerrero') classColor = '#e74c3c';
+                else if (carta.Clase === 'Tanque') classColor = '#7f8c8d';
+                else if (carta.Clase === 'Útil') classColor = '#2ecc71';
+                
+                // Determinar icono de rango
+                let rangoIcon = '';
+                if (carta.Rango === 'Cuerpo') rangoIcon = '⚔️';
+                else if (carta.Rango === 'Distancia') rangoIcon = '🏹';
+                else rangoIcon = '✨';
+                
                 row.innerHTML = `
-                    <td style="padding: 12px; font-family: monospace; color: #aaa;">${carta.ID}</td>
-                    <td style="padding: 12px; font-weight: bold;">${carta.Nombre}</td>
-                    <td style="padding: 12px;">
-                        <span class="card-type ${carta.Clase.toLowerCase() === 'guerrero' ? 'type-fuego' : carta.Clase.toLowerCase() === 'tanque' ? 'type-acero' : 'type-naturaleza'}" style="padding: 4px 8px; font-size: 0.8em;">
-                            ${carta.Clase}
-                        </span>
+                    <td style="padding: 10px; font-family: monospace; color: #aaa;">${carta.ID}</td>
+                    <td style="padding: 10px; font-weight: bold;">${carta.Nombre}</td>
+                    <td style="padding: 10px;">
+                        <span style="color:${classColor}; font-weight:bold;">${carta.Clase}</span>
                     </td>
-                    <td style="padding: 12px;">${carta.Tipo}</td>
-                    <td style="padding: 12px; text-align: center; font-weight: bold;">${carta.CosteMana}</td>
-                    <td style="padding: 12px; text-align: center;">
+                    <td style="padding: 10px;">${carta.Tipo}</td>
+                    <td style="padding: 10px; text-align: center;">${rangoIcon} ${carta.Rango || '-'}</td>
+                    <td style="padding: 10px; text-align: center; font-weight: bold;">${carta.CosteHabilidad}</td>
+                    <td style="padding: 10px; text-align: center;">
                         ${carta.Clase !== 'Útil' ? `${carta.Ataque}/${carta.Salud}` : '-'}
                     </td>
-                    <td style="padding: 12px; font-size: 0.9em; max-width: 300px;">${carta.Habilidad || ''}</td>
+                    <td style="padding: 10px; text-align: center;">${carta.Alcance || '-'}</td>
+                    <td style="padding: 10px; font-size: 0.9em;">${carta.Habilidad || '-'}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -866,8 +942,8 @@
             document.getElementById('count-tanque').textContent = tanques;
             document.getElementById('count-util').textContent = utiles;
             
-            // Coste promedio
-            const costes = cartas.map(c => parseInt(c.CosteMana) || 0);
+            // Coste promedio de habilidad (solo para cartas con coste > 0)
+            const costes = cartas.map(c => parseInt(c.CosteHabilidad) || 0);
             const avg = costes.length > 0 ? 
                 (costes.reduce((a, b) => a + b, 0) / costes.length).toFixed(1) : 0;
             document.getElementById('avg-coste').textContent = avg;
@@ -881,7 +957,7 @@
             document.getElementById('search').value = '';
             document.getElementById('filter-class').value = '';
             document.getElementById('filter-type').value = '';
-            document.getElementById('filter-rarity').value = '';
+            document.getElementById('filter-range').value = '';
             
             if (isTableView) {
                 renderTableView();
@@ -931,7 +1007,7 @@
             document.getElementById('search').addEventListener('input', filterCards);
             document.getElementById('filter-class').addEventListener('change', filterCards);
             document.getElementById('filter-type').addEventListener('change', filterCards);
-            document.getElementById('filter-rarity').addEventListener('change', filterCards);
+            document.getElementById('filter-range').addEventListener('change', filterCards);
         }
 
         // Inicializar

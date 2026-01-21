@@ -1,0 +1,9 @@
+ID,Nombre,Clase,Tipo,Rango,CosteHabilidad,Ataque,Salud,Alcance,Habilidad,Keywords,Rareza
+G001,Lancero,Guerrero,Fuego,Cuerpo,0,2,4,1,-,-,Común
+G002,Arquero,Guerrero,Electricidad,Distancia,1,3,2,3,-,-,Común
+G003,Espadachín de Acero,Guerrero,Acero,Cuerpo,2,4,3,1,Gana +2 ataque este turno,Refuerzo,Poco Común
+T001,Escudero,Tanque,Tierra,Cuerpo,0,1,5,1,-,-,Común
+T002,Defensor,Tanque,Acero,Cuerpo,1,0,6,1,Protege aliado en misma columna (-2 daño),Protección,Común
+T003,Muro de Escudos,Tanque,Hielo,Cuerpo,2,0,8,1,Aliados en misma línea ganan +1 salud,Fortificación,Poco Común
+U001,Poción de Maná,Útil,Energía,-,1,0,0,-,+2 maná este turno,Maná,Común
+U002,Poción de Vida,Útil,Energía,-,1,0,0,-,Cura 3 salud a una unidad,Curación,Común
